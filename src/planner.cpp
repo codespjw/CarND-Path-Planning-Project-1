@@ -110,7 +110,7 @@ vector<Path> Planner::keep_lane(const SelfDrivingCar & sdc,
     new_start = 1;
   } else {
     int n_previous_path = previous_s_path.size();
-    for (auto i = 0; i < min(5, n_previous_path); ++i) {
+    for (auto i = 0; i < min(20, n_previous_path); ++i) {
       s_path.push_back(previous_s_path[i]); // from last plan
     }    
     speed = (s_path[s_path.size()-1] - s_path[s_path.size()-2]) / INTERVAL;
