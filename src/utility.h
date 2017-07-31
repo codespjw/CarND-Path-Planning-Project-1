@@ -36,9 +36,6 @@ vector<double> getFrenet(double x, double y, double theta,
 vector<double> getXY(double s, double d, 
           vector<double> maps_s, vector<double> maps_x, vector<double> maps_y);
 
-// evaluate polynomial 
-double polynomial(const vector<double> & coeff, double x);
-
 // debugging tool
 void report(const SelfDrivingCar & sdc,
             const vector<PeerCar> & peer_cars,

@@ -1,5 +1,6 @@
 
 #include "env.h"
+#include "utility.h"
 #include <limits>
 #include <cmath>
 
@@ -22,7 +23,9 @@ Map::Map(const vector<double> & waypoint_x,
     for (auto i = 0; i < n; ++i) {
       lane_x.push_back(waypoint_x[i] + waypoint_dx[i] * (HALF_LANE+lane*LANE_WIDTH));
       lane_y.push_back(waypoint_y[i] + waypoint_dy[i] * (HALF_LANE+lane*LANE_WIDTH));
-      
+      // auto xy = getXY(waypoint_s[i], HALF_LANE+lane*LANE_WIDTH, s, x, y);
+      // lane_x.push_back(xy[0]);
+      // lane_y.push_back(xy[1]);
     }
     tk::spline s2x; s2x.set_points(waypoint_s, lane_x);
     tk::spline s2y; s2y.set_points(waypoint_s, lane_y);
@@ -52,6 +55,27 @@ int Map::locate_front_car_in_lane(const SelfDrivingCar & sdc,
     int car_lane = locate_lane(car.d);
     if ( (car_lane == target_lane) && (car.s >= sdc.s)  ) {
       double dist = car.s - sdc.s;
+      if (dist < dist_with_sdc) {
+        peer_car_idx = icar;
+        dist_with_sdc = dist;
+      }
+    }
+  }
+  
+  return peer_car_idx;
+}
+
+int Map::locate_back_car_in_lane(const SelfDrivingCar & sdc, 
+                              const vector<PeerCar> & peer_cars,
+                              int target_lane) const {
+  int peer_car_idx = -1; // in case nothing found
+  double dist_with_sdc = numeric_limits<double>::infinity();
+
+  for (auto icar = 0; icar < peer_cars.size(); ++icar) {
+    const PeerCar & car = peer_cars[icar];
+    int car_lane = locate_lane(car.d);
+    if ( (car_lane == target_lane) && (car.s <= sdc.s)  ) {
+      double dist = sdc.s - car.s;
       if (dist < dist_with_sdc) {
         peer_car_idx = icar;
         dist_with_sdc = dist;

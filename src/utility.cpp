@@ -138,21 +138,12 @@ vector<double> getXY(double s, double d, vector<double> maps_s, vector<double> m
 void report(const SelfDrivingCar & sdc,
             const vector<PeerCar> & peer_cars,
             const Planner & planner) {
-  cout << endl;
+  // cout << endl;
+  // cout << "SDC yaw: " << sdc.yaw << endl;
+  // cout << "Planner State: " << planner.state << endl;
   cout << "SDC is in lane: " << planner.map.locate_lane(sdc.d) << " d: " << sdc.d << endl;
-  cout << "SDC speed: " << sdc.speed << endl;
-  cout << "Front Car in lane 0: " << planner.map.locate_front_car_in_lane(sdc, peer_cars, 0) << endl;
-  cout << "Front Car in lane 1: " << planner.map.locate_front_car_in_lane(sdc, peer_cars, 1) << endl;
-  cout << "Front Car in lane 2: " << planner.map.locate_front_car_in_lane(sdc, peer_cars, 2) << endl;
-}
-
-double polynomial(const vector<double> & coeff, double x) {
-  double result = 0;
-  for (int i = coeff.size()-1; i >= 0; --i) {
-    // cout << "DEBUG POLY:" << i << ":" << result << "," << coeff[i] << endl;
-    result *= x;
-    result += coeff[i];
-  }
-  
-  return result;
+  // cout << "SDC speed: " << sdc.speed << endl;
+  // cout << "Front Car in lane 0: " << planner.map.locate_front_car_in_lane(sdc, peer_cars, 0) << endl;
+  // cout << "Front Car in lane 1: " << planner.map.locate_front_car_in_lane(sdc, peer_cars, 1) << endl;
+  // cout << "Front Car in lane 2: " << planner.map.locate_front_car_in_lane(sdc, peer_cars, 2) << endl;
 }

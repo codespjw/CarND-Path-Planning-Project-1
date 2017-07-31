@@ -70,6 +70,10 @@ public:
                               const vector<PeerCar> & peer_cars,
                               int target_lane) const;
 
+  int locate_back_car_in_lane(const SelfDrivingCar & sdc, 
+                              const vector<PeerCar> & peer_cars,
+                              int target_lane) const;
+
 public:
   vector<double> x;
   vector<double> y;
