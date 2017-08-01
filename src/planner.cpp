@@ -26,9 +26,9 @@ tuple<Path, Path> Planner::plan(const SelfDrivingCar & sdc,
   // set target speed according to lane
   int sdc_lane = map.locate_lane(sdc.d);
   if (sdc_lane == 0) {
-    TARGET_SPEED = 21.5; //m/s
-  } else if (sdc_lane == 1) {
     TARGET_SPEED = 21; //m/s
+  } else if (sdc_lane == 1) {
+    TARGET_SPEED = 20.5; //m/s
   } else {
     TARGET_SPEED = 20; //m/s
   }
@@ -50,17 +50,22 @@ tuple<Path, Path> Planner::plan(const SelfDrivingCar & sdc,
   // Strategy for Self Driving
   // Contributing factors: 
   // speed of front car on each lane
+  // distance of front car on each lane
 
   // collect front car speed infor for lane 0, 1, 2
   vector<double> frontcar_speeds;
+  vector<double> frontcar_dists;
   for (int lane = 0; lane <= map.MAX_RIGHT_LANE; ++lane) {
     int frontcar_i = map.locate_front_car_in_lane(sdc, peers, lane);
     double car_speed = numeric_limits<double>::infinity(); // no front car
+    double car_dist = numeric_limits<double>::infinity();
     if (frontcar_i != -1) {
       const PeerCar & frontcar(peers[frontcar_i]);
       car_speed = sqrt(frontcar.vx*frontcar.vx + frontcar.vy*frontcar.vy);
+      car_dist = frontcar.s - sdc.s;
     }
     frontcar_speeds.push_back(car_speed);
+    frontcar_dists.push_back(car_dist);
   }
   
   // DEFAULT behavior - stay in lane
@@ -83,7 +88,8 @@ tuple<Path, Path> Planner::plan(const SelfDrivingCar & sdc,
       target_lane = 1;
     }
     // try to change lane
-    if (frontcar_speeds[target_lane] > frontcar_speeds[sdc_lane]) {
+    if ( (frontcar_speeds[target_lane] >= frontcar_speeds[sdc_lane]*1.1) 
+      || (frontcar_dists[target_lane] >= 100 + frontcar_dists[sdc_lane]) ) {
       try_to_change_lane = true;
       cout << "TRY TO CHANGE FROM LANE " << sdc_lane << " LANE " << target_lane << endl;
       result = change_lane(sdc, peers,
@@ -125,7 +131,7 @@ vector<Path> Planner::keep_lane(const SelfDrivingCar & sdc,
   if (front_car_idx != -1) { //car ahead on the same lane
     const PeerCar & frontcar = peers[front_car_idx];
     double car_distance = distance(sdc.x, sdc.y, frontcar.x, frontcar.y);
-    double safe_buffer = sdc.speed * INTERVAL * PATH_LENGTH + SAFE_DISTANCE;
+    double safe_buffer = sdc.speed *MPH2MPS * INTERVAL * PATH_LENGTH + SAFE_DISTANCE;
     if (car_distance <= safe_buffer) {
       free_to_go = false;
     }
@@ -175,6 +181,8 @@ vector<Path> Planner::keep_lane(const SelfDrivingCar & sdc,
     // auto y = xy[1];
     auto x = s2x(s);
     auto y = s2y(s);
+
+    // cout << "sdc d vs dd:" << sdc.d << " : " << sd[1] << endl; 
     x_path.push_back(x);
     y_path.push_back(y);
   }
@@ -206,25 +214,7 @@ vector<Path> Planner::change_lane(
   int idx_front_car_on_target = map.locate_front_car_in_lane(sdc, peers, target_lane);
   int idx_back_car_on_target = map.locate_back_car_in_lane(sdc, peers, target_lane);
   int idx_front_car_on_current = map.locate_front_car_in_lane(sdc, peers, sdc_lane);
-  // bool is_safe_to_change = (target_lane >= 0) && (target_lane <= map.MAX_RIGHT_LANE);
-  // is_safe_to_change = is_safe_to_change && (sdc.speed >= 30/*MPH*/);
-  // // is_safe_to_change = is_safe_to_change && (fabs(sdc.yaw) <= 0.5);
-  // const int SAFE_DIST_FOR_LANE_CHANGE = 40;
-  // if (idx_front_car_on_target != -1) { // check dist with front car on target
-  //   double dist_with_front = peers[idx_front_car_on_target].s - sdc.s;
-  //   is_safe_to_change = is_safe_to_change && (dist_with_front >= SAFE_DIST_FOR_LANE_CHANGE);
-  //   cout << "dist_with_front:" << dist_with_front << endl;
-  // }
-  // if (idx_back_car_on_target != -1) { // check dist with back car on target
-  //   double dist_with_back = sdc.s - peers[idx_back_car_on_target].s;
-  //   is_safe_to_change = is_safe_to_change && (dist_with_back >= SAFE_DIST_FOR_LANE_CHANGE);
-  //   cout << "dist_with_back:" << dist_with_back << endl;
-  // }
-  // if (idx_front_car_on_current != -1) {
-  //   double dist_with_current_front = peers[idx_front_car_on_current].s - sdc.s;
-  //   is_safe_to_change = is_safe_to_change && (dist_with_current_front >= SAFE_DIST_FOR_LANE_CHANGE/2);
-  //   cout << "dist_with_current_front:" << dist_with_current_front << endl;
-  // }
+
 
 
   if (!is_safe_to_change_lanes(target_lane, sdc, peers)) { // already the leftmost lane
@@ -313,23 +303,39 @@ bool Planner::is_safe_to_change_lanes(int target_lane,
   int idx_back_car_on_target = map.locate_back_car_in_lane(sdc, peers, target_lane);
   int idx_front_car_on_current = map.locate_front_car_in_lane(sdc, peers, sdc_lane);
   bool is_safe_to_change = (target_lane >= 0) && (target_lane <= map.MAX_RIGHT_LANE);
-  is_safe_to_change = is_safe_to_change && (sdc.speed >= 30/*MPH*/);
+  is_safe_to_change = is_safe_to_change && (sdc.speed >= 35/*MPH*/);
   // is_safe_to_change = is_safe_to_change && (fabs(sdc.yaw) <= 0.5);
   const int SAFE_DIST_FOR_LANE_CHANGE = 40;
   if (idx_front_car_on_target != -1) { // check dist with front car on target
-    double dist_with_front = peers[idx_front_car_on_target].s - sdc.s;
-    is_safe_to_change = is_safe_to_change && (dist_with_front >= SAFE_DIST_FOR_LANE_CHANGE);
-    cout << "dist_with_front:" << dist_with_front << endl;
+    const PeerCar & car(peers[idx_front_car_on_target]);
+    double carspeed = sqrt(car.vx*car.vx+car.vy*car.vy);
+    double safe_distance = fabs(sdc.speed*MPH2MPS - carspeed) * 4 + SAFE_DISTANCE;
+    double dist_with_front = car.s - sdc.s;
+    is_safe_to_change = is_safe_to_change && (dist_with_front >= safe_distance);
+
+    // is_safe_to_change = is_safe_to_change && (dist_with_front >= SAFE_DIST_FOR_LANE_CHANGE-15);
+    cout << "dist_with_front:" << dist_with_front<< " safe dist: " << safe_distance << endl;
   }
   if (idx_back_car_on_target != -1) { // check dist with back car on target
-    double dist_with_back = sdc.s - peers[idx_back_car_on_target].s;
-    is_safe_to_change = is_safe_to_change && (dist_with_back >= SAFE_DIST_FOR_LANE_CHANGE);
-    cout << "dist_with_back:" << dist_with_back << endl;
+    const PeerCar & car(peers[idx_back_car_on_target]);
+    double carspeed = sqrt(car.vx*car.vx+car.vy*car.vy);
+    double safe_distance = fabs(carspeed - sdc.speed*MPH2MPS) * 6 + SAFE_DISTANCE;
+    double dist_with_back = sdc.s - car.s;
+    is_safe_to_change = is_safe_to_change && (dist_with_back >= safe_distance);
+    
+    // is_safe_to_change = is_safe_to_change && (dist_with_back >= SAFE_DIST_FOR_LANE_CHANGE-10);
+    cout << "dist_with_back:" << dist_with_back << " safe dist: " << safe_distance << endl;
+    cout << "carspeed:" << carspeed << " sdc speed:" << sdc.speed << endl;
   }
   if (idx_front_car_on_current != -1) {
-    double dist_with_current_front = peers[idx_front_car_on_current].s - sdc.s;
-    is_safe_to_change = is_safe_to_change && (dist_with_current_front >= SAFE_DIST_FOR_LANE_CHANGE/2);
-    cout << "dist_with_current_front:" << dist_with_current_front << endl;
+    const PeerCar & car(peers[idx_front_car_on_current]);
+    double carspeed = sqrt(car.vx*car.vx+car.vy*car.vy);
+    double safe_distance = fabs(sdc.speed*MPH2MPS - carspeed) * 3 + SAFE_DISTANCE;
+    double dist_with_current_front = car.s - sdc.s;
+    is_safe_to_change = is_safe_to_change && (dist_with_current_front >= safe_distance);
+
+    // is_safe_to_change = is_safe_to_change && (dist_with_current_front >= SAFE_DIST_FOR_LANE_CHANGE/4);
+    cout << "dist_with_current_front:" << dist_with_current_front << " safe dist: " << safe_distance << endl;
   }
 
   return is_safe_to_change;
