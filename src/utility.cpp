@@ -148,4 +148,6 @@ void report(const SelfDrivingCar & sdc,
   // cout << "Front Car in lane 0: " << planner.map.locate_front_car_in_lane(sdc, peer_cars, 0) << endl;
   // cout << "Front Car in lane 1: " << planner.map.locate_front_car_in_lane(sdc, peer_cars, 1) << endl;
   // cout << "Front Car in lane 2: " << planner.map.locate_front_car_in_lane(sdc, peer_cars, 2) << endl;
+  cout << "sdc: " << "s=" << sdc.s << " d=" << sdc.d << " x=" << sdc.x << " y=" << sdc.y << " speed=" << sdc.speed << " yaw=" << sdc.yaw << endl;
+  cout << endl;
 }

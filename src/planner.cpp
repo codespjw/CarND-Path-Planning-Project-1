@@ -26,11 +26,11 @@ tuple<Path, Path> Planner::plan(const SelfDrivingCar & sdc,
   // set target speed according to lane
   int sdc_lane = map.locate_lane(sdc.d);
   if (sdc_lane == 0) {
-    TARGET_SPEED = 21; //m/s
-  } else if (sdc_lane == 1) {
     TARGET_SPEED = 20.5; //m/s
-  } else {
+  } else if (sdc_lane == 1) {
     TARGET_SPEED = 20; //m/s
+  } else {
+    TARGET_SPEED = 29.5; //m/s
   }
 
   // update previous_s_path from the last plan based on size of previous_x_path
@@ -73,7 +73,7 @@ tuple<Path, Path> Planner::plan(const SelfDrivingCar & sdc,
   vector<vector<double>> result;
 
   if (frontcar_speeds[sdc_lane] <= 0.9 * TARGET_SPEED) {  // consider changing lanes 
-    cout << "CONSIDER CHANGING LANES FOR SPEED" << endl;
+    // cout << "CONSIDER CHANGING LANES FOR SPEED" << endl;
     
     
     // pick target lane
@@ -276,7 +276,7 @@ vector<Path> Planner::change_lane(
       speed = (s_path[s_path.size()-1] - s_path[s_path.size()-2]) / INTERVAL;
       new_start = s_path.size();
     }
-    double target_speed = TARGET_SPEED;
+    double target_speed = min(TARGET_SPEED, 20);
     for (auto i = new_start; i < PATH_LENGTH*6; ++i) {
       speed = accelerate(speed, target_speed);
       s_path.push_back(s_path.back() + speed * INTERVAL);
