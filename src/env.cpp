@@ -3,6 +3,7 @@
 #include "utility.h"
 #include <limits>
 #include <cmath>
+#include <random>
 
 using namespace std;
 
@@ -16,13 +17,20 @@ Map::Map(const vector<double> & waypoint_x,
          dy(waypoint_dy) {
 
   auto n = waypoint_x.size();
-  auto HALF_LANE = LANE_WIDTH / 2;
+  double HALF_LANE = LANE_WIDTH / 2;
+  double lower = -0.5;
+  double upper = 0.2;
+  uniform_real_distribution<double> unif(lower, upper);
+  default_random_engine re(random_device{}()); 
   for (int lane = 0; lane <= MAX_RIGHT_LANE; ++lane) {
     vector<double> lane_x;
     vector<double> lane_y;
     for (auto i = 0; i < n; ++i) {
-      lane_x.push_back(waypoint_x[i] + waypoint_dx[i] * (HALF_LANE+lane*LANE_WIDTH));
-      lane_y.push_back(waypoint_y[i] + waypoint_dy[i] * (HALF_LANE+lane*LANE_WIDTH));
+      // jittering a bit because the resolution of waypoints are not good enough for 
+      // keeping in lane
+      double jitter = 0;//unif(re);
+      lane_x.push_back(waypoint_x[i] + waypoint_dx[i] * (HALF_LANE+lane*LANE_WIDTH+jitter));
+      lane_y.push_back(waypoint_y[i] + waypoint_dy[i] * (HALF_LANE+lane*LANE_WIDTH+jitter));
       // auto xy = getXY(waypoint_s[i], HALF_LANE+lane*LANE_WIDTH, s, x, y);
       // lane_x.push_back(xy[0]);
       // lane_y.push_back(xy[1]);
@@ -36,11 +44,9 @@ Map::Map(const vector<double> & waypoint_x,
 
 int Map::locate_lane(double car_d) const {
   // return 0 based lane index
-  int lane = floor(static_cast<int>(car_d) / LANE_WIDTH);
-  // return -1 when out of lane
-  if (lane > MAX_RIGHT_LANE) {
-    lane = -1;
-  }
+  int lane = floor(car_d / LANE_WIDTH);
+  // return MAX_RIGHT_LANE when out of lane
+  lane = min(MAX_RIGHT_LANE, lane);
   return lane;
 }
 

@@ -45,7 +45,6 @@ private:
 
   vector<double> previous_s_path;
 public:
-  int state;
   bool in_change_lane;
 
 private:
@@ -66,6 +65,9 @@ private:
     double lane_change);
 
   double accelerate(double current_speed, double target_speed) const;
+  bool is_safe_to_change_lanes(int target_lane,
+                      const SelfDrivingCar & sdc,
+                      const vector<PeerCar> & peers) const;
 };
 
 #endif
