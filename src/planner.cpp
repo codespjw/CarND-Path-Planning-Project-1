@@ -276,7 +276,7 @@ vector<Path> Planner::change_lane(
       speed = (s_path[s_path.size()-1] - s_path[s_path.size()-2]) / INTERVAL;
       new_start = s_path.size();
     }
-    double target_speed = min(TARGET_SPEED, 20);
+    double target_speed = min(TARGET_SPEED, 20.0);
     for (auto i = new_start; i < PATH_LENGTH*6; ++i) {
       speed = accelerate(speed, target_speed);
       s_path.push_back(s_path.back() + speed * INTERVAL);
