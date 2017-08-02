@@ -19,7 +19,7 @@ Map::Map(const vector<double> & waypoint_x,
   auto n = waypoint_x.size();
   double HALF_LANE = LANE_WIDTH / 2;
   double lower = -0.5;
-  double upper = 0.1;
+  double upper = -0.1;
   uniform_real_distribution<double> unif(lower, upper);
   default_random_engine re(random_device{}()); 
   for (int lane = 0; lane <= MAX_RIGHT_LANE; ++lane) {
@@ -37,6 +37,8 @@ Map::Map(const vector<double> & waypoint_x,
       // lane_x.push_back(xy[0]);
       // lane_y.push_back(xy[1]);
     }
+
+
     // quick fix for inaccrurate spline model of loops
     // a better solution is to use local segment models
     for (auto i = 1; i < n/3; ++i) {

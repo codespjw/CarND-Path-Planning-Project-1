@@ -21,6 +21,11 @@ tuple<Path, Path> Planner::plan(const SelfDrivingCar & sdc,
                    const vector<double> & previous_y_path,
                    const double end_path_s,
                    const double end_path_d)  {
+  // // stop at the end
+  // if (sdc.s >= 6900) {
+  //   return make_tuple(Path(), Path());
+  // }
+
 
   // House Keeping 
   // set target speed according to lane
@@ -30,7 +35,7 @@ tuple<Path, Path> Planner::plan(const SelfDrivingCar & sdc,
   } else if (sdc_lane == 1) {
     TARGET_SPEED = 20; //m/s
   } else {
-    TARGET_SPEED = 29.5; //m/s
+    TARGET_SPEED = 19.5; //m/s
   }
 
   // update previous_s_path from the last plan based on size of previous_x_path
@@ -88,7 +93,8 @@ tuple<Path, Path> Planner::plan(const SelfDrivingCar & sdc,
       target_lane = 1;
     }
     // try to change lane
-    if ( (frontcar_speeds[target_lane] >= frontcar_speeds[sdc_lane]*1.1) 
+    if ( ( (frontcar_speeds[target_lane] >= frontcar_speeds[sdc_lane]*1.1) &&
+            (frontcar_dists[target_lane] +30 >= frontcar_dists[sdc_lane]) ) 
       || (frontcar_dists[target_lane] >= 100 + frontcar_dists[sdc_lane]) ) {
       try_to_change_lane = true;
       cout << "TRY TO CHANGE FROM LANE " << sdc_lane << " LANE " << target_lane << endl;
