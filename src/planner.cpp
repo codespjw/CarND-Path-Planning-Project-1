@@ -174,7 +174,9 @@ vector<Path> Planner::keep_lane(const SelfDrivingCar & sdc,
   // construct new path plan
   for (auto i = new_start; i < PATH_LENGTH; ++i) {
     speed = accelerate(speed, target_speed);
-    s_path.push_back(s_path.back() + speed * INTERVAL);
+    auto s = s_path.back() + speed * INTERVAL;
+    // if (s > 6914.149) s -= 6914.149;
+    s_path.push_back(s);
   }
 
   vector<double> x_path;
@@ -285,7 +287,9 @@ vector<Path> Planner::change_lane(
     double target_speed = min(TARGET_SPEED, 20.0);
     for (auto i = new_start; i < PATH_LENGTH*6; ++i) {
       speed = accelerate(speed, target_speed);
-      s_path.push_back(s_path.back() + speed * INTERVAL);
+      auto s = s_path.back() + speed * INTERVAL;
+      // if (s >= 6914.149) s -= 6914.149;
+      s_path.push_back(s);
     }
 
     for (auto s : s_path) {

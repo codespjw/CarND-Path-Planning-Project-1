@@ -41,11 +41,11 @@ Map::Map(const vector<double> & waypoint_x,
 
     // quick fix for inaccrurate spline model of loops
     // a better solution is to use local segment models
-    for (auto i = 1; i < n/3; ++i) {
+    for (auto i = 1; i < n; ++i) {
       double jitter = unif(re);
       lane_x.push_back(waypoint_x[i] + waypoint_dx[i] * (HALF_LANE+lane*LANE_WIDTH+jitter));
       lane_y.push_back(waypoint_y[i] + waypoint_dy[i] * (HALF_LANE+lane*LANE_WIDTH+jitter));
-      lane_s.push_back(waypoint_s[i]+waypoint_s[n-1]);
+      lane_s.push_back(waypoint_s[i]+6945.554);
     }
     tk::spline s2x; s2x.set_points(lane_s, lane_x);
     tk::spline s2y; s2y.set_points(lane_s, lane_y);
